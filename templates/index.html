@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Water Gun</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Animated background particles */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 2px, transparent 2px),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 60% 10%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px, 80px 80px, 50px 50px, 70px 70px;
+      animation: float 25s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Additional floating elements */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 90% 70%, rgba(255, 255, 255, 0.06) 3px, transparent 3px),
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08) 2px, transparent 2px),
+        radial-gradient(circle at 70% 90%, rgba(255, 255, 255, 0.05) 2.5px, transparent 2.5px);
+      background-size: 90px 90px, 65px 65px, 110px 110px;
+      animation: floatReverse 30s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0%, 100% { 
+        transform: translateY(0px) rotate(0deg) scale(1); 
+        opacity: 0.7;
+      }
+      25% { 
+        transform: translateY(-15px) rotate(90deg) scale(1.1); 
+        opacity: 1;
+      }
+      50% { 
+        transform: translateY(-25px) rotate(180deg) scale(0.9); 
+        opacity: 0.8;
+      }
+      75% { 
+        transform: translateY(-10px) rotate(270deg) scale(1.05); 
+        opacity: 0.9;
+      }
+    }
+
+    @keyframes floatReverse {
+      0%, 100% { 
+        transform: translateY(0px) rotate(360deg) scale(1); 
+        opacity: 0.5;
+      }
+      33% { 
+        transform: translateY(20px) rotate(240deg) scale(1.2); 
+        opacity: 0.8;
+      }
+      66% { 
+        transform: translateY(-5px) rotate(120deg) scale(0.8); 
+        opacity: 0.6;
+      }
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 50px 40px;
+      box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      animation: slideUp 0.8s ease-out;
+      position: relative;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-size: 2.8em;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 40px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3));
+      }
+      to {
+        filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.6));
+      }
+    }
+
+    .choice-container {
+      margin: 40px 0;
+    }
+
+    .choice-label {
+      display: block;
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 20px;
+    }
+
+    select {
+      appearance: none;
+      background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+      border: 2px solid #e2e8f0;
+      border-radius: 15px;
+      padding: 15px 25px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #2d3748;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      position: relative;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 45px;
+      min-width: 200px;
+    }
+
+    select:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 25px rgba(102, 126, 234, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 
+        0 0 0 3px rgba(102, 126, 234, 0.1),
+        0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    .play-button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      color: white;
+      padding: 18px 40px;
+      font-size: 1.2em;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 30px;
+      box-shadow: 
+        0 8px 25px rgba(102, 126, 234, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .play-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .play-button:hover::before {
+      left: 100%;
+    }
+
+    .play-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 
+        0 15px 35px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .play-button:active {
+      transform: translateY(-1px);
+      box-shadow: 
+        0 5px 15px rgba(102, 126, 234, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .play-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #result {
+      margin-top: 40px;
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #2d3748;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+      border-radius: 20px;
+      padding: 30px;
+      border: 2px solid #e2e8f0;
+      transition: all 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #result.show-result {
+      animation: resultPop 0.6s ease-out;
+      background: linear-gradient(145deg, #f0fff4, #dcfce7);
+      border-color: #86efac;
+    }
+
+    @keyframes resultPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .result-line {
+      margin: 8px 0;
+      padding: 5px 0;
+    }
+
+    .choice-emoji {
+      font-size: 2em;
+      margin: 0 10px;
+      display: inline-block;
+      animation: bounce 0.6s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .outcome {
+      font-size: 1.8em;
+      font-weight: 800;
+      margin-top: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .outcome.win {
+      color: #059669;
+      text-shadow: 0 0 10px rgba(5, 150, 105, 0.5);
+    }
+
+    .outcome.lose {
+      color: #dc2626;
+      text-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+    }
+
+    .outcome.draw {
+      color: #d97706;
+      text-shadow: 0 0 10px rgba(217, 119, 6, 0.5);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #e2e8f0;
+      border-radius: 50%;
+      border-top-color: #667eea;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vs-indicator {
+      font-size: 1.5em;
+      font-weight: 800;
+      color: #6b7280;
+      margin: 15px 0;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .game-container {
+        padding: 30px 20px;
+        margin: 20px;
+      }
+      
+      h1 {
+        font-size: 2.2em;
+      }
+      
+      select {
+        min-width: 180px;
+        font-size: 1em;
+      }
+      
+      .play-button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🐍 Snake - Water - Gun 🔫</h1>
+
+    <div class="choice-container">
+      <label class="choice-label" for="userChoice">Choose your weapon:</label>
+      <select id="userChoice">
+        <option value="s">🐍 Snake</option>
+        <option value="w">💧 Water</option>
+        <option value="g">🔫 Gun</option>
+      </select>
+    </div>
+
+    <button class="play-button" onclick="playGame()" id="playBtn">
+      ⚡ Play Game
+    </button>
+
+    <div id="result">
+      <div style="color: #6b7280; font-size: 1.1em;">
+        Select your choice and click play to start the battle!
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getChoiceEmoji(choice) {
+      const emojis = {
+        'Snake': '🐍',
+        'Water': '💧', 
+        'Gun': '🔫'
+      };
+      return emojis[choice] || '';
+    }
+
+    function playGame() {
+      const choice = document.getElementById("userChoice").value;
+      const playBtn = document.getElementById("playBtn");
+      const resultDiv = document.getElementById("result");
+
+      // Show loading state
+      playBtn.disabled = true;
+      playBtn.innerHTML = '<span class="loading"></span>Playing...';
+      
+      resultDiv.innerHTML = `
+        <div class="loading"></div>
+        <div>Battle in progress...</div>
+      `;
+      resultDiv.classList.remove('show-result');
+
+      fetch('/play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ choice })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Reset button
+        playBtn.disabled = false;
+        playBtn.innerHTML = '⚡ Play Again';
+
+        if (data.error) {
+          resultDiv.innerHTML = `
+            <div style="color: #dc2626; font-size: 1.2em;">
+              ❌ ${data.error}
+            </div>
+          `;
+        } else {
+          const userEmoji = getChoiceEmoji(data.you);
+          const computerEmoji = getChoiceEmoji(data.computer);
+          
+          let outcomeClass = '';
+          let outcomeEmoji = '';
+          
+          if (data.outcome.toLowerCase() === 'win') {
+            outcomeClass = 'win';
+            outcomeEmoji = '🎉';
+          } else if (data.outcome.toLowerCase() === 'lose') {
+            outcomeClass = 'lose';
+            outcomeEmoji = '💔';
+          } else {
+            outcomeClass = 'draw';
+            outcomeEmoji = '🤝';
+          }
+
+          resultDiv.innerHTML = `
+            <div class="result-line">
+              <strong>You:</strong> <span class="choice-emoji">${userEmoji}</span> ${data.you}
+            </div>
+            <div class="vs-indicator">VS</div>
+            <div class="result-line">
+              <strong>Computer:</strong> <span class="choice-emoji">${computerEmoji}</span> ${data.computer}
+            </div>
+            <div class="outcome ${outcomeClass}">
+              ${outcomeEmoji} ${data.outcome.toUpperCase()}
+            </div>
+          `;
+        }
+        
+        resultDiv.classList.add('show-result');
+      })
+      .catch(error => {
+        // Reset button on error
+        playBtn.disabled = false;
+        playBtn.innerHTML = '⚡ Play Game';
+        
+        resultDiv.innerHTML = `
+          <div style="color: #dc2626; font-size: 1.2em;">
+            ❌ Connection error. Please try again!
+          </div>
+        `;
+        console.error('Error:', error);
+      });
+    }
+  </script>
+</body>
+</html>
